@@ -1,3 +1,9 @@
+# rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/BlockLength
+# rubocop:disable Metrics/CyclomaticComplexity
+# rubocop:disable Metrics/PerceivedComplexity
+
 module JSONTranslate
   module Translates
     SUFFIX = "_translations".freeze
@@ -46,6 +52,29 @@ module JSONTranslate
             where("JSON_CONTAINS(#{quoted_translation_store}, :translation, '$')", translation: translation_hash.to_json)
           else
             where("#{quoted_translation_store} @> :translation::jsonb", translation: translation_hash.to_json)
+          end
+        end
+
+        # Methods added since the repo fork.
+        define_singleton_method "search_#{attr_name}_translation" do |value, locale = I18n.locale|
+          quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
+
+          if MYSQL_ADAPTERS.include?(connection.adapter_name)
+            where("JSON_EXTRACT(#{quoted_translation_store}, :path) LIKE :val", { path: "$.\"#{locale}\"", val: "%#{value}%" })
+          else
+            # TODO: add compatibility to PostgreSQL
+            raise NotImplementedError
+          end
+        end
+
+        define_singleton_method "order_#{attr_name}_translation" do |value, locale = I18n.locale|
+          quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
+
+          if MYSQL_ADAPTERS.include?(connection.adapter_name)
+            # TODO: add order function
+          else
+            # TODO: add compatibility to PostgreSQL
+            raise NotImplementedError
           end
         end
       end
