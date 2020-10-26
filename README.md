@@ -84,7 +84,8 @@ To order records using translations without constructing JSON queries by hand:
 
 ```ruby
 Post.order_title_translation # => #<ActiveRecord::Relation ...>
-Post.order_title_translation(order: :desc, locale: :he) # => #<ActiveRecord::Relation ...>
+Post.order_title_translation(:desc) # => #<ActiveRecord::Relation ...>
+Post.order_title_translation(:desc, :he) # => #<ActiveRecord::Relation ...>
 ```
 
 In order to make this work, you'll need to define an JSON or JSONB column for each of

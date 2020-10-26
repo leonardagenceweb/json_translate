@@ -72,7 +72,7 @@ module JSONTranslate
           quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
-            order("JSON_EXTRACT(#{quoted_translation_store}, '$.\"#{locale}\"') #{order.upcase}")
+            order(Arel.sql("JSON_EXTRACT(#{quoted_translation_store}, '$.\"#{locale}\"') #{order.upcase}"))
           else
             # TODO: add compatibility to PostgreSQL
             raise NotImplementedError
