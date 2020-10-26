@@ -5,9 +5,10 @@
 # rubocop:disable Metrics/PerceivedComplexity
 
 module JSONTranslate
+  # Translates module
   module Translates
-    SUFFIX = "_translations".freeze
-    MYSQL_ADAPTERS = %w[MySQL Mysql2 Mysql2Spatial]
+    SUFFIX = '_translations'.freeze
+    MYSQL_ADAPTERS = %w[MySQL Mysql2 Mysql2Spatial].freeze
 
     def translates(*attrs, allow_blank: false)
       include InstanceMethods
@@ -17,10 +18,10 @@ module JSONTranslate
       self.translated_attribute_names = attrs
       self.permitted_translated_attributes = [
         *self.ancestors
-          .select {|klass| klass.respond_to?(:permitted_translated_attributes) }
-          .map(&:permitted_translated_attributes),
+             .select { |klass| klass.respond_to?(:permitted_translated_attributes) }
+             .map(&:permitted_translated_attributes),
         *attrs.product(I18n.available_locales)
-          .map { |attribute, locale| :"#{attribute}_#{locale}" }
+              .map { |attribute, locale| :"#{attribute}_#{locale}" }
       ].flatten.compact
 
       attrs.each do |attr_name|
@@ -46,7 +47,7 @@ module JSONTranslate
 
         define_singleton_method "with_#{attr_name}_translation" do |value, locale = I18n.locale|
           quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
-          translation_hash = { "#{locale}" => value }
+          translation_hash = { locale.to_s => value }
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
             where("JSON_CONTAINS(#{quoted_translation_store}, :translation, '$')", translation: translation_hash.to_json)
@@ -67,11 +68,11 @@ module JSONTranslate
           end
         end
 
-        define_singleton_method "order_#{attr_name}_translation" do |value, locale = I18n.locale|
+        define_singleton_method "order_#{attr_name}_translation" do |order = :asc, locale = I18n.locale|
           quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
-            # TODO: add order function
+            order("JSON_EXTRACT(#{quoted_translation_store}, '$.\"#{locale}\"') #{order.upcase}")
           else
             # TODO: add compatibility to PostgreSQL
             raise NotImplementedError
