@@ -57,10 +57,12 @@ module JSONTranslate
         end
 
         # Methods added since the repo fork.
-        define_singleton_method "search_#{attr_name}_translation" do |value, locale = I18n.locale|
+        define_singleton_method "search_#{attr_name}_translation" do |value, case_sensitive = false, locale = I18n.locale|
           quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
+            return where("LOWER(JSON_EXTRACT(#{quoted_translation_store}, :path)) LIKE LOWER(:val)", { path: "$.\"#{locale}\"", val: "%#{value}%" }) unless case_sensitive
+
             where("JSON_EXTRACT(#{quoted_translation_store}, :path) LIKE :val", { path: "$.\"#{locale}\"", val: "%#{value}%" })
           else
             # TODO: add compatibility to PostgreSQL
