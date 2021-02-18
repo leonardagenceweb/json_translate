@@ -78,6 +78,7 @@ To search records using translations without constructing JSON queries by hand:
 ```ruby
 Post.search_title_translation("database") # => #<ActiveRecord::Relation ...>
 Post.search_title_translation("אתר זה", :he) # => #<ActiveRecord::Relation ...>
+Post.search_title_translation("אתר זה", :he, fallback_search: true) # => #<ActiveRecord::Relation ...>
 ```
 
 To order records using translations without constructing JSON queries by hand:

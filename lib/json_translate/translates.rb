@@ -56,12 +56,12 @@ module JSONTranslate
         end
 
         # Methods added since the repo fork.
-        define_singleton_method "search_#{attr_name}_translation" do |value, locale = I18n.locale|
+        define_singleton_method "search_#{attr_name}_translation" do |value, locale = I18n.locale, fallback_search: true|
           quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
           query_params = { path: "$.\"#{locale}\"", val: "%#{value}%" }
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
-            return where("CAST(#{quoted_translation_store}->>:path as CHAR) LIKE :val", query_params) unless InstanceMethods.enabled_fallback
+            return where("CAST(#{quoted_translation_store}->>:path as CHAR) LIKE :val", query_params) unless fallback_search
 
             where("CAST(IF(JSON_CONTAINS_PATH(#{quoted_translation_store}, 'one', :path),
                 #{quoted_translation_store}->>:path,
