@@ -1,0 +1,125 @@
+# config taken from https://github.com/frab/frab/blob/master/.rubocop.yml
+
+AllCops:
+  TargetRubyVersion: 2.7
+  Exclude:
+    - bin/**/*
+    - contrib/**/*
+    - config/**/*
+    - db/**/*
+    - tmp/**/*
+    - Capfile
+    - Gemfile
+    - Rakefile
+
+# Nested module syntax is fine, just be careful with
+# scoping, i.e. on include
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# Old ruby style syntax may still be needed
+Style/HashSyntax:
+  Enabled: true
+
+# Never break line due to length, except in data
+# vim: set wrap
+Metrics/LineLength:
+  Max: 1024
+
+# Rails controllers and such
+Metrics/MethodLength:
+  Max: 20
+
+# Rails class
+Metrics/ClassLength:
+  Max: 300
+
+# Use and/or for flow control, but not in boolean assignments
+# http://devblog.avdi.org/2010/08/02/using-and-and-or-in-ruby/
+Style/AndOr:
+  Enabled: false
+
+# Use not with .select and flow control
+Style/Not:
+  Enabled: false
+
+# Use { only for single line blocks, but allow block content on its own line to keep line length short
+# each { |l|
+#   l.apply_long_method_name
+# }
+Style/BlockDelimiters:
+  Enabled: false
+
+# Do not use lambda
+Style/Lambda:
+  Enabled: false
+
+# Allow TODO instead of requiring TODO:
+Style/CommentAnnotation:
+  Enabled: false
+
+# Do not write 1234 as 1_234
+Style/NumericLiterals:
+  Enabled: false
+
+# Relax for controllers with multiple formats
+Metrics/AbcSize:
+  Max: 40
+
+# Too spammy
+Style/Documentation:
+  Enabled: false
+
+# Will probably be default in ruby 3
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# Use raise if you expect to catch the expception
+Style/SignalException:
+  Enabled: false
+
+# Style/MultilineIfModifier:
+#   Enabled: false
+
+
+# False positive for if var = value
+Lint/AssignmentInCondition:
+  Enabled: false
+
+# Too much manual horizontal alignment
+# Style/AlignHash:
+#   Enabled: false
+
+# Style/AlignParameters:
+#   Enabled: false
+
+# Style/AlignArray:
+#   Enabled: false
+
+# Vim prefers fixed indent, avoid manual vertical alignment
+# Style/AlignParameters:
+#   Enabled: true
+#   EnforcedStyle: with_fixed_indentation
+
+Style/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+# Load order is important
+Bundler/OrderedGems:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+# We prefer double quotes always
+Style/StringLiterals:
+  Enabled: false
+
+# Remove spam on RSpec tests
+Metrics/BlockLength:
+  ExcludedMethods: [
+    'describe',
+    'context',
+    'define',
+    'factory'
+  ]
