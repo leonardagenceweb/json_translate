@@ -65,7 +65,7 @@ module JSONTranslate
 
             where("CAST(IF(JSON_CONTAINS_PATH(#{quoted_translation_store}, 'one', :path),
                 #{quoted_translation_store}->>:path,
-                JSON_UNQUOTE(JSON_EXTRACT(JSON_EXTRACT(#{quoted_translation_store},'$[0].*'),'$[0]'))
+                JSON_UNQUOTE(JSON_EXTRACT(JSON_EXTRACT(#{quoted_translation_store},'$[0].*'),'$[0]')) # Fetch the first value, could be better
               ) as CHAR) LIKE :val", query_params)
           else
             # TODO: add compatibility to PostgreSQL
@@ -78,7 +78,7 @@ module JSONTranslate
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
             order(Arel.sql("#{quoted_translation_store}->>'$.\"#{locale}\"' #{order.upcase},
-              JSON_UNQUOTE(JSON_EXTRACT(JSON_EXTRACT(name_translations,'$[0].*'),'$[0]')) #{order.upcase}"))
+              JSON_UNQUOTE(JSON_EXTRACT(JSON_EXTRACT(name_translations,'$[0].*'),'$[0]')) #{order.upcase}")) # Fetch the first value, could be better
           else
             # TODO: add compatibility to PostgreSQL
             raise NotImplementedError
