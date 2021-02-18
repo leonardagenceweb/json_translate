@@ -61,7 +61,7 @@ module JSONTranslate
           query_params = { path: "$.\"#{locale}\"", val: "%#{value}%" }
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
-            return where("CAST(#{quoted_translation_store}->>:path as CHAR) LIKE :val", query_params) unless @enabled_fallback
+            return where("CAST(#{quoted_translation_store}->>:path as CHAR) LIKE :val", query_params) unless InstanceMethods.enabled_fallback
 
             where("CAST(IF(JSON_CONTAINS_PATH(#{quoted_translation_store}, 'one', :path),
                 #{quoted_translation_store}->>:path,
