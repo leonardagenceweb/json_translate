@@ -56,26 +56,17 @@ module JSONTranslate
         end
 
         # Methods added since the repo fork.
-        define_singleton_method "search_#{attr_name}_translation" do |value, locale = I18n.locale, case_sensitive: false, fallback_search: true|
+        define_singleton_method "search_#{attr_name}_translation" do |value, locale = I18n.locale|
           quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
           query_params = { path: "$.\"#{locale}\"", val: "%#{value}%" }
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
-            if case_sensitive
-              return where("#{quoted_translation_store}->:path LIKE :val", query_params) unless fallback_search
+            return where("CAST(#{quoted_translation_store}->>:path as CHAR) LIKE :val", query_params) unless enabled_fallback
 
-              return where("IF(JSON_CONTAINS_PATH(#{quoted_translation_store}, 'one', :path),
-                  #{quoted_translation_store}->:path,
-                  #{quoted_translation_store}->'$.*')
-                LIKE :val", query_params)
-            end
-
-            return where("LOWER(#{quoted_translation_store}->:path) LIKE LOWER(:val)", query_params) unless fallback_search
-
-            where("IF(JSON_CONTAINS_PATH(#{quoted_translation_store}, 'one', :path),
-                LOWER(#{quoted_translation_store}->:path),
-                LOWER(#{quoted_translation_store}->'$.*'))
-              LIKE LOWER(:val)", query_params)
+            where("CAST(IF(JSON_CONTAINS_PATH(#{quoted_translation_store}, 'one', :path),
+                #{quoted_translation_store}->>:path,
+                JSON_UNQUOTE(JSON_EXTRACT(JSON_EXTRACT(#{quoted_translation_store},'$[0].*'),'$[0]'))
+              ) as CHAR) LIKE :val", query_params)
           else
             # TODO: add compatibility to PostgreSQL
             raise NotImplementedError
@@ -86,7 +77,8 @@ module JSONTranslate
           quoted_translation_store = connection.quote_column_name("#{attr_name}#{SUFFIX}")
 
           if MYSQL_ADAPTERS.include?(connection.adapter_name)
-            order(Arel.sql("#{quoted_translation_store}->'$.\"#{locale}\"' #{order.upcase}"))
+            order(Arel.sql("#{quoted_translation_store}->>'$.\"#{locale}\"' #{order.upcase},
+              JSON_UNQUOTE(JSON_EXTRACT(JSON_EXTRACT(name_translations,'$[0].*'),'$[0]')) #{order.upcase}"))
           else
             # TODO: add compatibility to PostgreSQL
             raise NotImplementedError
